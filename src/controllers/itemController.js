@@ -9,10 +9,10 @@ exports.createItem = async (req, res) => {
       [name, code, quantity, place_id, status || 'In-Store', description]
     );
     
-    // AUDIT LOG
+   
     await db.query(
       'INSERT INTO audit_logs (user_id, action, target_id, new_value) VALUES ($1, $2, $3, $4)',
-      [req.user.id, 'CREATE_ITEM', result.rows[0].id, result.rows[0]]
+      [req.user.id, 'CREATE_ITEM', result.rows[0].id, JSON.stringify(result.rows[0])]
     );
 
     res.status(201).json(result.rows[0]);
@@ -23,7 +23,7 @@ exports.createItem = async (req, res) => {
 
 exports.updateQuantity = async (req, res) => {
   const { id } = req.params;
-  const { change } = req.body; // e.g., +5 or -3
+  const { change } = req.body; 
 
   const item = await db.query('SELECT quantity FROM items WHERE id = $1', [id]);
   const oldQty = item.rows[0].quantity;
@@ -31,7 +31,7 @@ exports.updateQuantity = async (req, res) => {
 
   await db.query('UPDATE items SET quantity = $1 WHERE id = $2', [newQty, id]);
 
-  // AUDIT LOG: Previous -> New
+  
   await db.query(
     'INSERT INTO audit_logs (user_id, action, table_name, target_id, old_value, new_value) VALUES ($1, $2, $3, $4, $5, $6)',
     [req.user.id, 'QTY_CHANGE', 'items', id, { quantity: oldQty }, { quantity: newQty }]

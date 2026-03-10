@@ -8,7 +8,7 @@ const protect = (requiredPermission) => {
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.user = decoded; // id, username, and permissions array
-
+            console.log("permissions:",req.user.permissions)
             if (requiredPermission && !req.user.permissions.includes(requiredPermission)) {
                 return res.status(403).json({ message: "Permission denied" });
             }

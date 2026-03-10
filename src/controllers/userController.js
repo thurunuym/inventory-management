@@ -14,11 +14,12 @@ exports.createUser = async (req, res) => {
     
     await db.query(
       'INSERT INTO audit_logs (user_id, action, target_id, new_value) VALUES ($1, $2, $3, $4)',
-      [req.user.id, 'CREATE_USER', newUser.rows[0].id, { username }]
+      [req.user.id, 'CREATE_USER', newUser.rows[0].id, JSON.stringify({ username })]
     );
 
     res.status(201).json(newUser.rows[0]);
   } catch (err) {
-    res.status(400).json({ error: "Username already exists or invalid role" });
-  }
+  console.error(err);
+  res.status(500).json({ error: err.message });
+}
 };
