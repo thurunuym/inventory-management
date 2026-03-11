@@ -5,8 +5,8 @@ async function seed() {
   const hash = await bcrypt.hash('Thurunu@admin123', 10);
   
   await db.query(`INSERT INTO roles (name, permissions) VALUES 
-    ('Admin', '["user.manage", "item.create", "item.update", "item.delete", "storage.manage", "audit.view"]'),
-    ('Staff', '["item.update", "borrow.manage"]')`);
+    ('Admin', '["user.manage", "item.create", "item.update", "item.delete", "storage.manage", "audit.view" , "item.view"]'),
+    ('Staff', '["item.update", "borrow.manage" , "item.view" , "storage.view"]')`);
 
   await db.query(`INSERT INTO users (username, password_hash, role_id) VALUES ($1, $2, $3)`, 
     ['admin', hash, 1]);

@@ -6,6 +6,6 @@ const protect = require('../middleware/authorize');
 
 router.post('/cupboards', protect('storage.manage'), storageCtrl.createCupboard);
 router.post('/places', protect('storage.manage'), storageCtrl.createPlace);
-router.get('/storage', protect(), storageCtrl.getStorageMap);
+router.get('/storage', protect('storage.view'), storageCtrl.getStorageMap);
 
 module.exports = router;
