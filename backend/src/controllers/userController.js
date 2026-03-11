@@ -10,7 +10,6 @@ exports.createUser = async (req, res) => {
       'INSERT INTO users (username, password_hash, role_id) VALUES ($1, $2, $3) RETURNING id, username',
       [username, hashedPassword, role_id]
     );
-
     
     await db.query(
       'INSERT INTO audit_logs (user_id, action, target_id, new_value) VALUES ($1, $2, $3, $4)',
@@ -22,4 +21,11 @@ exports.createUser = async (req, res) => {
   console.error(err);
   res.status(500).json({ error: err.message });
 }
+};
+
+exports.getAllUsers = async (req, res) => {
+  const result = await db.query(
+    'SELECT u.id, u.username, r.name as role FROM users u JOIN roles r ON u.role_id = r.id'
+  );
+  res.json(result.rows);
 };

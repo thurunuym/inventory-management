@@ -39,3 +39,13 @@ exports.updateQuantity = async (req, res) => {
 
   res.json({ message: "Quantity updated", newQty });
 };
+
+exports.getAllItems = async (req, res) => {
+  const result = await db.query(`
+    SELECT i.*, p.name as place_name, c.name as cupboard_name 
+    FROM items i 
+    LEFT JOIN storage_places p ON i.place_id = p.id 
+    LEFT JOIN cupboards c ON p.cupboard_id = c.id
+  `);
+  res.json(result.rows);
+};

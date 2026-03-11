@@ -65,3 +65,23 @@ exports.returnItem = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
+
+  exports.getBorrowingLogs = async (req, res) => {
+  const result = await db.query(`
+    SELECT b.*, i.name as item_name 
+    FROM borrowing_records b 
+    JOIN items i ON b.item_id = i.id 
+    ORDER BY b.borrow_date DESC
+  `);
+  res.json(result.rows);
+};
+
+  exports.getAuditLogs = async (req, res) => {
+  const result = await db.query(`
+    SELECT a.*, u.username 
+    FROM audit_logs a 
+    JOIN users u ON a.user_id = u.id 
+    ORDER BY a.created_at DESC
+  `);
+  res.json(result.rows);
+};

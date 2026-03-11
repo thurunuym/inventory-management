@@ -14,3 +14,12 @@ exports.createPlace = async (req, res) => {
   );
   res.status(201).json(result.rows[0]);
 };
+
+exports.getStorageMap = async (req, res) => {
+  const result = await db.query(`
+    SELECT c.name as cupboard, p.name as place 
+    FROM cupboards c 
+    JOIN storage_places p ON c.id = p.cupboard_id
+  `);
+  res.json(result.rows);
+};
