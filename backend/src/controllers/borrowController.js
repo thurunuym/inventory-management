@@ -4,38 +4,62 @@ exports.borrowItem = async (req, res) => {
   const { item_id, borrower_name, contact_details, qty, return_date } = req.body;
 
   try {
-    const itemCheck = await db.query('SELECT quantity, name FROM items WHERE id = $1', [item_id]);
-    console.log("itemCheck" , itemCheck)
-    if (itemCheck.rows.length === 0) return res.status(404).json({ error: "Item not found" });
+    const itemCheck = await db.query(
+      "SELECT quantity, name FROM items WHERE id = $1",
+      [item_id]
+    );
+
+    if (itemCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Item not found" });
+    }
 
     const currentQty = itemCheck.rows[0].quantity;
-    if (currentQty < qty) return res.status(400).json({ error: "Not enough stock available" });
+
+    if (currentQty < qty) {
+      return res.status(400).json({ error: "Not enough stock available" });
+    }
 
     const newQty = currentQty - qty;
-    await db.query('UPDATE items SET quantity = $1, status = $2 WHERE id = $3', 
-      [newQty, 'Borrowed', item_id]);
 
-    
+    // determine correct status
+    const newStatus = newQty === 0 ? "Borrowed" : "In-Store";
+
+    await db.query(
+      "UPDATE items SET quantity = $1, status = $2 WHERE id = $3",
+      [newQty, newStatus, item_id]
+    );
+
     const borrowRecord = await db.query(
-      `INSERT INTO borrowing_records 
-      (item_id, borrower_name, contact_details, quantity_borrowed, expected_return_date) 
-      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      `INSERT INTO borrowing_records
+      (item_id, borrower_name, contact_details, quantity_borrowed, expected_return_date)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *`,
       [item_id, borrower_name, contact_details, qty, return_date]
     );
 
-    
     await db.query(
-      `INSERT INTO audit_logs (user_id, action, table_name, target_id, old_value, new_value) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [req.user.id, 'ITEM_BORROWED', 'items', item_id, 
-       { quantity: currentQty }, { quantity: newQty, borrower: borrower_name }]
+      `INSERT INTO audit_logs 
+      (user_id, action, table_name, target_id, old_value, new_value)
+      VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        req.user.id,
+        "ITEM_BORROWED",
+        "items",
+        item_id,
+        { quantity: currentQty },
+        { quantity: newQty, borrower: borrower_name },
+      ]
     );
 
-    res.status(201).json({ message: "Borrow record created", record: borrowRecord.rows[0] });
+    res.status(201).json({
+      message: "Borrow record created",
+      record: borrowRecord.rows[0],
+    });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}; 
+};
 
 exports.returnItem = async (req, res) => {
     const { record_id } = req.params; 
