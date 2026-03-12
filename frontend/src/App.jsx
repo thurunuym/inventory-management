@@ -8,7 +8,7 @@ import Header from './components/Header'
 import BorrowItem from './pages/Borrow'
 import ReturnItem from './pages/Return'
 import Users from './pages/Users'
-import { useAuth } from './context/authContext'
+import { useAuth } from './context/Context'
 
 function App() {
   const { user, loading } = useAuth()
