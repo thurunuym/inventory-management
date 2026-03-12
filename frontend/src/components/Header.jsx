@@ -1,6 +1,5 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import '../styles/Header.css';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -8,7 +7,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/logout`, {
+      await fetch('http://localhost:5000/api/auth/logout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -24,15 +23,21 @@ export default function Header() {
   if (!user) return null;
 
   return (
-    <header className="header">
-      <div className="header-container">
-        <h1 className="header-title">Inventory Management System</h1>
-        <div className="header-right">
-          <span className="user-info">Welcome, {user.username}</span>
-          <button className="logout-btn" onClick={() => navigate('/home')}>
+    <header className="bg-slate-800 text-white shadow-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
+        <h1 className="text-xl font-bold">Inventory Management System</h1>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium">{user.username}</span>
+          <button 
+            className="px-4 py-2 text-sm font-medium bg-slate-700 hover:bg-slate-600 rounded-md transition-colors" 
+            onClick={() => navigate('/home')}
+          >
             Back
           </button>
-          <button className="logout-btn" onClick={handleLogout}>
+          <button 
+            className="px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 rounded-md transition-colors" 
+            onClick={handleLogout}
+          >
             Logout
           </button>
         </div>

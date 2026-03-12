@@ -1,12 +1,37 @@
 const db = require('../config/db');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+exports.uploadImage = async (req, res) => {
+  try {
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+
+    const file = req.files.image;
+    const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+      folder: 'inventory-management',
+      resource_type: 'auto',
+    });
+
+    res.json({ image_url: uploadResult.secure_url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 exports.createItem = async (req, res) => {
-  const { name, code, quantity, place_id, status, description } = req.body;
+  const { name, code, quantity, place_id, status, description, image_url } = req.body;
   try {
     const result = await db.query(
-      `INSERT INTO items (name, code, quantity, place_id, status, description) 
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [name, code, quantity, place_id, status || 'In-Store', description]
+      `INSERT INTO items (name, code, quantity, place_id, status, description, image_url) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [name, code, quantity, place_id, status || 'In-Store', description, image_url]
     );
     
    

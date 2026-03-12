@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const fileUpload = require('express-fileupload');
 const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const itemRoutes = require('./src/routes/itemRoutes');
@@ -9,6 +10,10 @@ const storageRoutes = require('./src/routes/storageRoutes');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(fileUpload({
+  useTempFiles: true,
+  tempFileDir: '/tmp/',
+}));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

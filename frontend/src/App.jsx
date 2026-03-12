@@ -7,6 +7,7 @@ import BorrowingLogs from './pages/BorrowLog'
 import Header from './components/Header'
 import BorrowItem from './pages/Borrow'
 import ReturnItem from './pages/Return'
+import Users from './pages/Users'
 import { useAuth } from './context/AuthContext'
 
 function App() {
@@ -48,6 +49,10 @@ function App() {
 
         <Route path="/return" 
                element={user ? <ReturnItem /> : <Navigate to="/login" />}
+        />
+
+        <Route path="/users" 
+               element={user ? <Users /> : <Navigate to="/login" />}
         />
 
 
