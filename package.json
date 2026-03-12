@@ -1,0 +1,21 @@
+{
+  "name": "inventry-management-system",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd backend && npm install && node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thurunuym/inventory-management.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thurunuym/inventory-management/issues"
+  },
+  "homepage": "https://github.com/thurunuym/inventory-management#readme",
+  "description": ""
+}
