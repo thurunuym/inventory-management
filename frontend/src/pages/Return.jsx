@@ -13,9 +13,10 @@ const ReturnItem = () => {
   const fetchRecords = async () => {
     try {
       const res = await API.get('/borrowing');
-      setRecords(res.data);
+      setRecords(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error fetching borrowing logs", err);
+      setRecords([]);
     }
   };
 

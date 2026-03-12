@@ -8,8 +8,13 @@ const Inventory = () => {
   const [showForm, setShowForm] = useState(false);
 
   const fetchItems = async () => {
-    const res = await API.get("/inventory/items");
-    setItems(res.data);
+    try {
+      const res = await API.get("/inventory/items");
+      setItems(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Failed to fetch items:", err);
+      setItems([]);
+    }
   };
 
   const handleStatusChange = async (id, newStatus) => {

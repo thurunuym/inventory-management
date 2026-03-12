@@ -28,9 +28,10 @@ const AddItem = ({ onSuccess }) => {
   const fetchStorage = async () => {
     try {
       const res = await API.get("/inventory/storage");
-      setStorage(res.data);
+      setStorage(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Storage load failed", err);
+      setStorage([]);
     }
   };
 

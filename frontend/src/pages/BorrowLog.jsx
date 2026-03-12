@@ -7,9 +7,10 @@ const BorrowLog = () => {
   const fetchLogs = async () => {
     try {
       const res = await API.get("/borrowing");
-      setLogs(res.data);
+      setLogs(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
+      setLogs([]);
     }
   };
 

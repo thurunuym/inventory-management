@@ -14,11 +14,13 @@ const AuditLog = () => {
 
       const res = await API.get(`/audit?page=${page}&limit=${limit}`);
 
-      setLogs(res.data.data);
-      setPagination(res.data.pagination);
+      setLogs(Array.isArray(res.data.data) ? res.data.data : []);
+      setPagination(res.data.pagination || {});
 
     } catch (err) {
       console.error(err);
+      setLogs([]);
+      setPagination({});
     }
   };
 

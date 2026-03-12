@@ -19,9 +19,10 @@ const BorrowItem = () => {
   const fetchItems = async () => {
     try {
       const res = await API.get('/inventory/items');
-      setItems(res.data);
+      setItems(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error fetching items", err);
+      setItems([]);
     }
   };
 

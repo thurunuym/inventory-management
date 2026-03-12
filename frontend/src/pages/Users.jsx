@@ -7,8 +7,13 @@ const Users = () => {
   const [showForm, setShowForm] = useState(false);
 
   const fetchUsers = async () => {
-    const res = await API.get("/users/users");
-    setUsers(res.data);
+    try {
+      const res = await API.get("/users/users");
+      setUsers(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error fetching users", err);
+      setUsers([]);
+    }
   };
 
   useEffect(() => {
