@@ -171,9 +171,4 @@ node db/seed.js
 
 
 
-⚠️ **Before submitting your project**, make sure you update:
 
-- Live link
-- Demo video link
-
-in the **Project Links section**.
