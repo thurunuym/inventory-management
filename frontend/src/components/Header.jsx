@@ -7,7 +7,9 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:5000/api/auth/logout', {
+      const isDev = import.meta.env.DEV;
+      const BASE_URL = isDev ? 'http://localhost:5000' : '';
+      await fetch(`${BASE_URL}/api/auth/logout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
