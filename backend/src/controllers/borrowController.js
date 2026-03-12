@@ -171,16 +171,33 @@ exports.getBorrowingLogs = async (req, res) => {
 
 exports.getAuditLogs = async (req, res) => {
   try {
-    const result = await db.query(`
-      SELECT 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const offset = (page - 1) * limit;
+
+    const logs = await db.query(
+      `SELECT 
         a.*, 
         u.username
       FROM audit_logs a
       JOIN users u ON a.user_id = u.id
       ORDER BY a.created_at DESC
-    `);
+      LIMIT $1 OFFSET $2`,
+      [limit, offset]
+    );
 
-    res.json(result.rows);
+    const total = await db.query(`SELECT COUNT(*) FROM audit_logs`);
+
+    res.json({
+      data: logs.rows,
+      pagination: {
+        total: parseInt(total.rows[0].count),
+        page,
+        limit,
+        totalPages: Math.ceil(total.rows[0].count / limit)
+      }
+    });
 
   } catch (err) {
     res.status(500).json({ error: err.message });

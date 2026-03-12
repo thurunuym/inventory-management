@@ -98,3 +98,28 @@ exports.deleteItem = async (req, res) => {
     client.release();
   }
 };
+
+
+exports.updateStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; 
+
+  try {
+    const item = await db.query('SELECT status FROM items WHERE id = $1', [id]);
+    if (item.rows.length === 0) return res.status(404).json({ error: "Item not found" });
+    
+    const oldStatus = item.rows[0].status;
+
+    await db.query('UPDATE items SET status = $1 WHERE id = $2', [status, id]);
+
+    
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, table_name, target_id, old_value, new_value) VALUES ($1, $2, $3, $4, $5, $6)',
+      [req.user.id, 'STATUS_CHANGE', 'items', id, { status: oldStatus }, { status: status }]
+    );
+
+    res.json({ message: "Status updated successfully", status });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

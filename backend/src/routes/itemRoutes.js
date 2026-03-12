@@ -6,5 +6,7 @@ const protect = require('../middleware/authorize');
 router.post('/items', protect('item.create'), itemCtrl.createItem);
 router.patch('/items/:id/quantity', protect('item.update'), itemCtrl.updateQuantity);
 router.get('/items', protect('item.view'), itemCtrl.getAllItems);
+router.delete(`/items/:id`, protect('item.delete'), itemCtrl.deleteItem);
+router.patch('/items/:id/status', protect('item.update'), itemCtrl.updateStatus);
 
 module.exports = router;
