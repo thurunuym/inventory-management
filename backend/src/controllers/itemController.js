@@ -49,3 +49,52 @@ exports.getAllItems = async (req, res) => {
   `);
   res.json(result.rows);
 };
+
+exports.deleteItem = async (req, res) => {
+  const { id } = req.params;
+
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const item = await client.query(
+      "SELECT * FROM items WHERE id = $1",
+      [id]
+    );
+
+    if (item.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    await client.query(
+      "DELETE FROM items WHERE id = $1",
+      [id]
+    );
+
+    await client.query(
+      `INSERT INTO audit_logs 
+      (user_id, action, table_name, target_id, old_value) 
+      VALUES ($1, $2, $3, $4, $5)`,
+      [
+        req.user.id,
+        "DELETE_ITEM",
+        "items",
+        id,
+        item.rows[0]
+      ]
+    );
+
+    await client.query("COMMIT");
+
+    res.json({ message: "Item deleted successfully" });
+
+  } catch (err) {
+    await client.query("ROLLBACK");
+    res.status(500).json({ error: err.message });
+
+  } finally {
+    client.release();
+  }
+};
