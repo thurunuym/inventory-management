@@ -6,7 +6,7 @@ A secure, internal-only **Inventory Management System**. This application provid
 
 ## 🔗 Project Links
 
-- **Live Link:**  https://inventory-ms-x34d.onrender.com
+- **Live Link:**  https://inventory-management-76r3.onrender.com
 
 ---
 
