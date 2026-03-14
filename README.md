@@ -1,12 +1,16 @@
 # Inventory Management System
 
-A secure, internal-only **Inventory Management System**. This application provides a streamlined workflow to manage tools, products, and electronic components with real-time tracking, storage hierarchy, and an automated audit trail.
+A secure, internal-only **Inventory Management System**. This application provides a streamlined workflow to manage tools, products, and electronic components with an automated audit trail.
 
 ---
 
 ## 🔗 Project Links
 
 - **Live Link:**  https://inventory-management-76r3.onrender.com
+
+### Login Details
+- username : admin
+- password : Thurunu@admin123
 
 ---
 
