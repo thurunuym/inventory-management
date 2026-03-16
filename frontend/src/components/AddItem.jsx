@@ -1,29 +1,30 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
+import { 
+  X, 
+  Upload, 
+  Image as ImageIcon, 
+  Loader2, 
+  Save, 
+  Tag, 
+  Hash, 
+  Info 
+} from "lucide-react";
 
 const AddItem = ({ onSuccess }) => {
   const [storage, setStorage] = useState([]);
   const [places, setPlaces] = useState([]);
-
-  const [form, setForm] = useState({
-    name: "",
-    code: "",
-    quantity: 1,
-    place_id: "",
-    status: "In-Store",
-    description: "",
-    image_url: "",
-  });
-
   const [loading, setLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
-  useEffect(() => {
-    fetchStorage();
-  }, []);
+  const [form, setForm] = useState({
+    name: "", code: "", quantity: 1, cupboard_id: "",
+    place_id: "", status: "In-Store", description: "", image_url: "",
+  });
+
+  useEffect(() => { fetchStorage(); }, []);
 
   const fetchStorage = async () => {
     try {
@@ -37,279 +38,160 @@ const AddItem = ({ onSuccess }) => {
 
   const handleCupboardChange = (e) => {
     const cupboardId = e.target.value;
-
-    setForm({
-      ...form,
-      place_id: "",
-    });
-
-    const selectedCupboard = storage.find((c) => c.id == cupboardId);
-
-    if (selectedCupboard) {
-      setPlaces(selectedCupboard.places);
-    } else {
-      setPlaces([]);
-    }
+    setForm({ ...form, cupboard_id: cupboardId, place_id: "" });
+    const selected = storage.find((c) => c.id == cupboardId);
+    setPlaces(selected ? selected.places : []);
   };
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleImageFile = async (file) => {
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
-      return;
-    }
-
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => setImagePreview(e.target.result);
-    reader.readAsDataURL(file);
-
-    // Upload to Cloudinary
-    await uploadImage(file);
-  };
-
-  const uploadImage = async (file) => {
+  const handleImageUpload = async (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    
+    setImagePreview(URL.createObjectURL(file));
     setUploadingImage(true);
+    
     try {
       const formData = new FormData();
       formData.append("image", file);
-
       const res = await API.post("/inventory/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      setForm({ ...form, image_url: res.data.image_url });
+      setForm(prev => ({ ...prev, image_url: res.data.image_url }));
     } catch (err) {
       alert("Image upload failed");
-      console.error(err);
     } finally {
       setUploadingImage(false);
-    }
-  };
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleImageFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileInput = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      handleImageFile(e.target.files[0]);
     }
   };
 
   const submitForm = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      await API.post("/inventory/items", {
-        name: form.name,
-        code: form.code,
-        quantity: form.quantity,
-        place_id: form.place_id,
-        status: form.status,
-        description: form.description,
-        image_url: form.image_url,
-      });
-
-      alert("Item created");
-
-      setForm({
-        name: "",
-        code: "",
-        quantity: 1,
-        place_id: "",
-        status: "In-Store",
-        description: "",
-        image_url: "",
-      });
-
-      setImagePreview(null);
-      setImageFile(null);
-      setPlaces([]);
-
-      if (onSuccess) onSuccess();
+      await API.post("/inventory/items", form);
+      onSuccess();
     } catch (err) {
       alert(err.response?.data?.error || "Failed to create item");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow max-w-xl">
-      <h2 className="text-xl font-bold mb-4">Add Inventory Item</h2>
+    <div className="bg-slate-800 text-slate-100 rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
+      <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+        <h2 className="text-xl font-bold flex items-center gap-2">
+          <Tag className="text-indigo-400" size={20} /> Register New Asset
+        </h2>
+      </div>
 
-      <form onSubmit={submitForm} className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold mb-1">Item Name</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
+      <form onSubmit={submitForm} className="p-6 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Item Name</label>
+              <div className="relative">
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                <input name="name" value={form.name} onChange={handleChange} required
+                  className="w-full bg-slate-900 border-slate-700 rounded-lg pl-10 text-white focus:ring-indigo-500" 
+                  placeholder="e.g. Oscilloscope" />
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-1">Item Code</label>
-          <input
-            name="code"
-            value={form.code}
-            onChange={handleChange}
-            required
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Serial / Code</label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                <input name="code" value={form.code} onChange={handleChange} required
+                  className="w-full bg-slate-900 border-slate-700 rounded-lg pl-10 text-white focus:ring-indigo-500" 
+                  placeholder="UI-990-22" />
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-1">Quantity</label>
-          <input
-            type="number"
-            name="quantity"
-            value={form.quantity}
-            min="1"
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Quantity</label>
+                <input type="number" name="quantity" value={form.quantity} min="1" onChange={handleChange}
+                  className="w-full bg-slate-900 border-slate-700 rounded-lg text-white focus:ring-indigo-500" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Status</label>
+                <select name="status" value={form.status} onChange={handleChange}
+                  className="w-full bg-slate-900 border-slate-700 rounded-lg text-white focus:ring-indigo-500">
+                  <option value="In-Store">In-Store</option>
+                  <option value="Borrowed">Borrowed</option>
+                  <option value="Damaged">Damaged</option>
+                  <option value="Missing">Missing</option>
+                </select>
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-1">Cupboard</label>
-          <select
-            value={form.cupboard_id}
-            onChange={handleCupboardChange}
-            className="w-full border px-3 py-2 rounded"
-          >
-            <option value="">Select Cupboard</option>
-            {storage.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Cupboard</label>
+                <select value={form.cupboard_id} onChange={handleCupboardChange}
+                  className="w-full bg-slate-900 border-slate-700 rounded-lg text-white focus:ring-indigo-500">
+                  <option value="">Select</option>
+                  {storage.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Shelf/Place</label>
+                <select name="place_id" value={form.place_id} onChange={handleChange} disabled={!places.length}
+                  className="w-full bg-slate-900 border-slate-700 rounded-lg text-white focus:ring-indigo-500 disabled:opacity-50">
+                  <option value="">Select</option>
+                  {places.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-1">Place</label>
-          <select
-            name="place_id"
-            value={form.place_id}
-            onChange={handleChange}
-            disabled={!places.length}
-            className="w-full border px-3 py-2 rounded"
-          >
-            <option value="">Select Place</option>
-            {places.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-1">Status</label>
-          <select
-            name="status"
-            value={form.status}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          >
-            <option value="In-Store">In-Store</option>
-            <option value="Borrowed">Borrowed</option>
-            <option value="Damaged">Damaged</option>
-            <option value="Missing">Missing</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-2">Item Image</label>
-          <div
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
-              dragActive
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-300 bg-gray-50 hover:bg-gray-100"
-            }`}
-          >
-            <input
-              type="file"
-              id="image-input"
-              accept="image/*"
-              onChange={handleFileInput}
-              className="hidden"
-            />
-            <label htmlFor="image-input" className="cursor-pointer block">
+          <div className="space-y-4">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Product Visual</label>
+            <div 
+              onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+              onDragLeave={() => setDragActive(false)}
+              onDrop={(e) => { e.preventDefault(); setDragActive(false); handleImageUpload(e.dataTransfer.files[0]); }}
+              className={`relative border-2 border-dashed rounded-xl h-48 flex flex-col items-center justify-center transition-all ${
+                dragActive ? "border-indigo-500 bg-indigo-500/10" : "border-slate-700 bg-slate-900 hover:bg-slate-800"
+              }`}
+            >
               {imagePreview ? (
-                <div className="space-y-2">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-h-40 mx-auto rounded"
-                  />
-                  <p className="text-sm text-gray-600">
-                    {uploadingImage ? "Uploading..." : "Click to change image"}
-                  </p>
+                <div className="relative w-full h-full p-2">
+                  <img src={imagePreview} className="w-full h-full object-contain rounded-lg" alt="Preview" />
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center rounded-lg">
+                      <Loader2 className="animate-spin text-indigo-400" />
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="space-y-2 py-4">
-                  <p className="text-lg font-semibold text-gray-700">
-                    📁 Drag and drop your image here
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    or click to select a file
-                  </p>
+                <div className="text-center p-4 pointer-events-none">
+                  <Upload className="mx-auto text-slate-600 mb-2" size={32} />
+                  <p className="text-sm text-slate-400">Drag image here or click to browse</p>
                 </div>
               )}
-            </label>
+              <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e.target.files[0])}
+                className="absolute inset-0 opacity-0 cursor-pointer" />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Description</label>
+              <textarea name="description" value={form.description} onChange={handleChange} rows="3"
+                className="w-full bg-slate-900 border-slate-700 rounded-lg text-white focus:ring-indigo-500" 
+                placeholder="Technical specifications or condition notes..." />
+            </div>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-1">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        <button type="submit" disabled={loading || uploadingImage}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
-          {loading ? "Creating..." : "Add Item"}
+          {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+          {loading ? "Registering..." : "Confirm Item Registration"}
         </button>
       </form>
     </div>
